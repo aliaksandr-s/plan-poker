@@ -17,9 +17,18 @@
   (swap! db dissoc session-id))
 
 ; Queries
-; (.log js/console "Hello, World")
+(defn active-player? [current-session-id session-id]
+  (= current-session-id session-id))
 
 ; UI
+(e/defn FullDeck []
+  (e/client
+    (dom/text "Full Deck")))
+
+(e/defn ShortDeck []
+  (e/client
+    (dom/text "Short Deck")))
+
 (e/defn App []
   (e/client
     (let [session-id (e/server (get-in e/http-request [:headers "sec-websocket-key"]))
@@ -41,9 +50,13 @@
           (dom/div
             (dom/ul
               (e/server 
-                (e/for-by identity [id db]
+                (e/for-by identity [player db]
                           (e/client 
-                            (dom/li (dom/text id)))))))
+                            (dom/li (dom/text player) 
+                                    (dom/div (if (active-player? session-id (first player)) 
+                                                (FullDeck.)
+                                                (ShortDeck.))))
+                            )))))
           )))))
 
 (e/defn Main [ring-request]
