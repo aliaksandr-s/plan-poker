@@ -5,6 +5,9 @@
             [hyperfiddle.electric-ui4 :as ui]
             ))
 
+; Constants
+(def DECK [0 1 2 3 5 8])
+
 ; State
 #?(:clj (defonce !db (atom {})))
 (e/def db (e/server (e/watch !db)))
@@ -23,11 +26,35 @@
 ; UI
 (e/defn FullDeck []
   (e/client
-    (dom/text "Full Deck")))
+    (dom/div
+      (e/for [card DECK]
+        (dom/span 
+          (dom/text card)
+          (dom/props
+            {:style {:border "1px solid black"
+                     :padding "5px"
+                     :margin "5px"
+                     :font-size "20px"
+                     :display "inline-block"
+                     :cursor "pointer"
+                     :background-color "white"
+                     }}
+          ))))))
 
-(e/defn ShortDeck []
+(e/defn DeckCover []
   (e/client
-    (dom/text "Short Deck")))
+    (dom/div
+      (dom/span 
+        (dom/text "X")
+        (dom/props
+          {:style {:border "1px solid black"
+                   :padding "5px"
+                   :margin "5px"
+                   :font-size "20px"
+                   :display "inline-block"
+                   :cursor "pointer"
+                   :background-color "white"}}
+          )))))
 
 (e/defn App []
   (e/client
@@ -55,7 +82,7 @@
                             (dom/li (dom/text player) 
                                     (dom/div (if (active-player? session-id (first player)) 
                                                 (FullDeck.)
-                                                (ShortDeck.))))
+                                                (DeckCover.))))
                             )))))
           )))))
 
