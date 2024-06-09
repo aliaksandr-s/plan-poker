@@ -1,4 +1,5 @@
 (ns electric-starter-app.main
+  (:import [hyperfiddle.electric Pending])
   (:require [hyperfiddle.electric :as e]
             [contrib.str :refer [blank->nil]]
             [hyperfiddle.electric-dom2 :as dom]
@@ -14,38 +15,47 @@
 
 ; Actions
 (defn join! [db session-id username]
-  (swap! db assoc session-id username))
+  (swap! db assoc session-id {:username username :picked-card nil}))
 
 (defn leave! [db session-id]
   (swap! db dissoc session-id))
+
+(defn pick-card! [db session-id card]
+  (swap! db assoc-in [session-id :picked-card] card))
 
 ; Queries
 (defn active-player? [current-session-id session-id]
   (= current-session-id session-id))
 
+(defn card-picked? [db session-id]
+  (-> db (get session-id) :picked-card (not= nil)))
+
+(defn picked-card [db session-id]
+  (-> db (get session-id) :picked-card))
+
 ; UI
-(e/defn FullDeck []
+(e/defn FullDeck [session-id]
   (e/client
     (dom/div
-      (e/for [card DECK]
-        (dom/span 
-          (dom/text card)
+      (e/for [val DECK]
+        (ui/button
+          (e/fn [] (e/server (pick-card! !db session-id val)))
+          (dom/text val)
           (dom/props
             {:style {:border "1px solid black"
-                     :padding "5px"
-                     :margin "5px"
+                     :padding "4px"
+                     :margin "4px"
                      :font-size "20px"
                      :display "inline-block"
                      :cursor "pointer"
-                     :background-color "white"
-                     }}
-          ))))))
+                     :background-color (if (= (picked-card db session-id) val) "lightgray" "white")}}
+            ))))))
 
-(e/defn DeckCover []
+(e/defn DeckCover [neighbour-session-id]
   (e/client
     (dom/div
       (dom/span 
-        (dom/text "X")
+        (dom/text (if (card-picked? db neighbour-session-id) "O" "X"))
         (dom/props
           {:style {:border "1px solid black"
                    :padding "5px"
@@ -77,12 +87,12 @@
           (dom/div
             (dom/ul
               (e/server 
-                (e/for-by identity [player db]
+                (e/for-by first [player db]
                           (e/client 
                             (dom/li (dom/text player) 
                                     (dom/div (if (active-player? session-id (first player)) 
-                                                (FullDeck.)
-                                                (DeckCover.))))
+                                                (FullDeck. session-id)
+                                                (DeckCover. (first player)))))
                             )))))
           )))))
 
