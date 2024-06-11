@@ -1,5 +1,4 @@
 (ns electric-starter-app.main
-  (:import [hyperfiddle.electric Pending])
   (:require [hyperfiddle.electric :as e]
             [contrib.str :refer [blank->nil]]
             [hyperfiddle.electric-dom2 :as dom]
@@ -10,32 +9,36 @@
 (def DECK [0 1 2 3 5 8])
 
 ; State
-; {"session-id" {:username "username" :picked-card nil} "session-id" {:username "username" :picked-card nil}}
-#?(:clj (defonce !db (atom {})))
+; players {"session-id" {:username "username" :picked-card nil} "session-id" {:username "username" :picked-card nil}}
+#?(:clj (defonce !db (atom {:players {} 
+                            :cards-revealed false})))
 (e/def db (e/server (e/watch !db)))
 
 ; Actions
 (defn join! [db session-id username]
-  (swap! db assoc session-id {:username username :picked-card nil}))
+  (swap! db update :players assoc session-id {:username username :picked-card nil}))
 
 (defn leave! [db session-id]
-  (swap! db dissoc session-id))
+  (swap! db update :players dissoc session-id))
 
 (defn pick-card! [db session-id card]
-  (swap! db assoc-in [session-id :picked-card] card))
+  (swap! db update :players assoc-in [session-id :picked-card] card))
 
 (defn reset-picked-cards! [db]
-  (swap! db (fn [db] (into {} (map (fn [[k v]] [k (assoc v :picked-card nil)]) db)))))
+  (swap! db update :players (fn [db] (into {} (map (fn [[k v]] [k (assoc v :picked-card nil)]) db)))))
 
 ; Queries
+(defn players [db] (-> db :players))
+(defn player-id [player] (first player))
+
+(defn picked-card [db session-id]
+  (-> db :players (get session-id) :picked-card))
+
 (defn active-player? [current-session-id session-id]
   (= current-session-id session-id))
 
 (defn card-picked? [db session-id]
-  (-> db (get session-id) :picked-card (not= nil)))
-
-(defn picked-card [db session-id]
-  (-> db (get session-id) :picked-card))
+  (-> db :players (get session-id) :picked-card (not= nil)))
 
 ; UI
 (e/defn FullDeck [session-id]
@@ -91,17 +94,19 @@
             (dom/br)
             (dom/br)
             (ui/button (e/fn [] (e/server (reset-picked-cards! !db)))
-                       (dom/text "New Round"))
+                       (dom/text "Reset"))
+            (ui/button (e/fn [] (println db))
+                       (dom/text "Reveal"))
             )
           (dom/div
             (dom/ul
               (e/server 
-                (e/for-by first [player db]
+                (e/for-by player-id [player (players  db)]
                           (e/client 
                             (dom/li (dom/text player) 
-                                    (dom/div (if (active-player? session-id (first player)) 
+                                    (dom/div (if (active-player? session-id (player-id player)) 
                                                 (FullDeck. session-id)
-                                                (DeckCover. (first player)))))
+                                                (DeckCover. (player-id player)))))
                             )))))
           )))))
 
