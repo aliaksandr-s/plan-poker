@@ -10,6 +10,7 @@
 (def DECK [0 1 2 3 5 8])
 
 ; State
+; {"session-id" {:username "username" :picked-card nil} "session-id" {:username "username" :picked-card nil}}
 #?(:clj (defonce !db (atom {})))
 (e/def db (e/server (e/watch !db)))
 
@@ -22,6 +23,9 @@
 
 (defn pick-card! [db session-id card]
   (swap! db assoc-in [session-id :picked-card] card))
+
+(defn reset-picked-cards! [db]
+  (swap! db (fn [db] (into {} (map (fn [[k v]] [k (assoc v :picked-card nil)]) db)))))
 
 ; Queries
 (defn active-player? [current-session-id session-id]
@@ -83,7 +87,12 @@
                        (dom/text "Join")
                        (dom/props {:disabled (nil? (blank->nil username))}))
             (ui/button (e/fn [] (e/server (leave! !db session-id)))
-                       (dom/text "Leave")))
+                       (dom/text "Leave"))
+            (dom/br)
+            (dom/br)
+            (ui/button (e/fn [] (e/server (reset-picked-cards! !db)))
+                       (dom/text "New Round"))
+            )
           (dom/div
             (dom/ul
               (e/server 
