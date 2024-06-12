@@ -6,7 +6,7 @@
             ))
 
 ; Constants
-(def DECK [0 1 2 3 5 8])
+(def DECK [1 2 3 5 8])
 
 ; State
 ; players {"session-id" {:username "username" :picked-card nil} "session-id" {:username "username" :picked-card nil}}
@@ -25,7 +25,13 @@
   (swap! db update :players assoc-in [session-id :picked-card] card))
 
 (defn reset-picked-cards! [db]
-  (swap! db update :players (fn [db] (into {} (map (fn [[k v]] [k (assoc v :picked-card nil)]) db)))))
+  (swap! db (fn [db]
+              (-> db
+                  (assoc :cards-revealed false)
+                  (update :players (fn [players] (into {} (map (fn [[k v]] [k (assoc v :picked-card nil)]) players))))))))
+
+(defn reveal-cards! [db]
+  (swap! db assoc :cards-revealed true))
 
 ; Queries
 (defn players [db] (-> db :players))
@@ -39,6 +45,9 @@
 
 (defn card-picked? [db session-id]
   (-> db :players (get session-id) :picked-card (not= nil)))
+
+(defn cards-revealed? [db]
+  (-> db :cards-revealed))
 
 ; UI
 (e/defn FullDeck [session-id]
@@ -58,15 +67,19 @@
                      :background-color (if (= (picked-card db session-id) val) "lightgray" "white")}}
             ))))))
 
-(e/defn DeckCover [neighbour-session-id]
+(e/defn SingleCard [neighbour-session-id]
   (e/client
     (dom/div
       (dom/span 
-        (dom/text (if (card-picked? db neighbour-session-id) "O" "X"))
+        (dom/text (cond 
+                    (and (cards-revealed? db) 
+                         (card-picked? db neighbour-session-id)) (picked-card db neighbour-session-id)
+                    (card-picked? db neighbour-session-id)       "O"
+                    :else                                        "X"))
         (dom/props
           {:style {:border "1px solid black"
-                   :padding "5px"
-                   :margin "5px"
+                   :padding "4px"
+                   :margin "4px"
                    :font-size "20px"
                    :display "inline-block"
                    :cursor "pointer"
@@ -95,7 +108,7 @@
             (dom/br)
             (ui/button (e/fn [] (e/server (reset-picked-cards! !db)))
                        (dom/text "Reset"))
-            (ui/button (e/fn [] (println db))
+            (ui/button (e/fn [] (e/server (reveal-cards! !db)))
                        (dom/text "Reveal"))
             )
           (dom/div
@@ -106,7 +119,7 @@
                             (dom/li (dom/text player) 
                                     (dom/div (if (active-player? session-id (player-id player)) 
                                                 (FullDeck. session-id)
-                                                (DeckCover. (player-id player)))))
+                                                (SingleCard. (player-id player)))))
                             )))))
           )))))
 
