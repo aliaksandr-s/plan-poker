@@ -3,10 +3,12 @@
             [contrib.str :refer [blank->nil]]
             [hyperfiddle.electric-dom2 :as dom]
             [hyperfiddle.electric-ui4 :as ui]
+            #?(:cljs ["js-cookie" :as js-cookie])
             ))
 
 ; Constants
 (def DECK [1 2 3 5 8])
+(def USERNAME_COOKIE "username")
 
 ; State
 ; players {"session-id" {:username "username" :picked-card nil} "session-id" {:username "username" :picked-card nil}}
@@ -33,6 +35,14 @@
 (defn reveal-cards! [db]
   (swap! db assoc :cards-revealed true))
 
+#?(:cljs 
+   (defn persist-username! [username] 
+     (.set js-cookie USERNAME_COOKIE username)))
+
+#?(:cljs 
+   (defn delete-persisted-username! [] 
+     (.remove js-cookie USERNAME_COOKIE)))
+
 ; Queries
 (defn players [db] (-> db :players))
 (defn player-id [player] (first player))
@@ -48,6 +58,10 @@
 
 (defn cards-revealed? [db]
   (-> db :cards-revealed))
+
+#?(:cljs
+   (defn persisted-username [] 
+     (.get js-cookie USERNAME_COOKIE)))
 
 ; UI
 (e/defn FullDeck [session-id]
@@ -94,15 +108,22 @@
       (e/server 
         (e/on-unmount #(leave! !db session-id))
         (e/client 
+          (when-let [usr (persisted-username)]
+            (e/server (join! !db session-id usr)))
           (dom/div 
             (ui/input username (e/fn [v] (reset! !username v)))
             (ui/button (e/fn [] 
                          (when 
                            (e/server (join! !db session-id username))
-                           (e/client (reset! !username ""))))
+                           (e/client (reset! !username "")
+                                     (persist-username! username))))
                        (dom/text "Join")
                        (dom/props {:disabled (nil? (blank->nil username))}))
-            (ui/button (e/fn [] (e/server (leave! !db session-id)))
+            (ui/button (e/fn [] 
+                         (when
+                           (e/server (leave! !db session-id))
+                           (e/client (reset! !username "")
+                                     (delete-persisted-username!))))
                        (dom/text "Leave"))
             (dom/br)
             (dom/br)
@@ -114,7 +135,7 @@
           (dom/div
             (dom/ul
               (e/server 
-                (e/for-by player-id [player (players  db)]
+                (e/for-by player-id [player (players db)]
                           (e/client 
                             (dom/li (dom/text player) 
                                     (dom/div (if (active-player? session-id (player-id player)) 
