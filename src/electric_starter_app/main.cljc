@@ -67,38 +67,29 @@
 (e/defn FullDeck [session-id]
   (e/client
     (dom/div
+      (dom/props {:style {:display "flex" :gap "8px" :flex-wrap "wrap"}})
       (e/for [val DECK]
         (ui/button
           (e/fn [] (e/server (pick-card! !db session-id val)))
           (dom/text val)
           (dom/props
-            {:style {:border "1px solid black"
-                     :padding "4px"
-                     :margin "4px"
-                     :font-size "20px"
-                     :display "inline-block"
-                     :cursor "pointer"
-                     :background-color (if (= (picked-card db session-id) val) "lightgray" "white")}}
+            {:class ["card" 
+                     (if (= (picked-card db session-id) val) "active" nil)]}
             ))))))
 
 (e/defn SingleCard [neighbour-session-id]
   (e/client
     (dom/div
-      (dom/span 
-        (dom/text (cond 
-                    (and (cards-revealed? db) 
-                         (card-picked? db neighbour-session-id)) (picked-card db neighbour-session-id)
-                    (card-picked? db neighbour-session-id)       "O"
-                    :else                                        "X"))
-        (dom/props
-          {:style {:border "1px solid black"
-                   :padding "4px"
-                   :margin "4px"
-                   :font-size "20px"
-                   :display "inline-block"
-                   :cursor "pointer"
-                   :background-color "white"}}
-          )))))
+      (dom/div
+        (dom/props 
+          {:class ["card" 
+                   (cond 
+                     (and (cards-revealed? db) 
+                          (card-picked? db neighbour-session-id)) (picked-card db neighbour-session-id)
+                     (card-picked? db neighbour-session-id)       "picked"
+                     :else                                        "unpicked")
+                   ]})
+        ))))
 
 (e/defn App []
   (e/client
@@ -111,26 +102,36 @@
           (when-let [usr (persisted-username)]
             (e/server (join! !db session-id usr)))
           (dom/div 
-            (ui/input username (e/fn [v] (reset! !username v)))
+            (dom/br)
+            (ui/input username 
+                      (e/fn [v] (reset! !username v))
+                      (dom/props {:class ["input"]}))
+            (dom/br)
+            (dom/br)
             (ui/button (e/fn [] 
                          (when 
                            (e/server (join! !db session-id username))
                            (e/client (reset! !username "")
                                      (persist-username! username))))
                        (dom/text "Join")
-                       (dom/props {:disabled (nil? (blank->nil username))}))
+                       (dom/props 
+                         {:class ["btn"]
+                          :disabled (nil? (blank->nil username))}))
             (ui/button (e/fn [] 
                          (when
                            (e/server (leave! !db session-id))
                            (e/client (reset! !username "")
                                      (delete-persisted-username!))))
-                       (dom/text "Leave"))
+                       (dom/text "Leave")
+                       (dom/props {:class ["btn"]}))
             (dom/br)
             (dom/br)
             (ui/button (e/fn [] (e/server (reset-picked-cards! !db)))
-                       (dom/text "Reset"))
+                       (dom/text "Reset")
+                       (dom/props {:class ["btn"]}))
             (ui/button (e/fn [] (e/server (reveal-cards! !db)))
-                       (dom/text "Reveal"))
+                       (dom/text "Reveal")
+                       (dom/props {:class ["btn"]}))
             )
           (dom/div
             (dom/ul
