@@ -140,6 +140,9 @@ body {
   padding: var(--size-2);
   transition: transform .2s;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card:hover {
@@ -148,6 +151,11 @@ body {
 
 .card.active {
   background: var(--blue-2);
+}
+
+.card.open {
+  cursor: default;
+  transform: none;
 }
 
 .card.unpicked {

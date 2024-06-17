@@ -79,17 +79,16 @@
 
 (e/defn SingleCard [neighbour-session-id]
   (e/client
-    (dom/div
+    (let [card-open? (and (cards-revealed? db) (card-picked? db neighbour-session-id))]
       (dom/div
         (dom/props 
           {:class ["card" 
                    (cond 
-                     (and (cards-revealed? db) 
-                          (card-picked? db neighbour-session-id)) (picked-card db neighbour-session-id)
+                     card-open?                                   "open"
                      (card-picked? db neighbour-session-id)       "picked"
                      :else                                        "unpicked")
                    ]})
-        ))))
+        (dom/text (when card-open? (picked-card db neighbour-session-id)))))))
 
 (e/defn App []
   (e/client
