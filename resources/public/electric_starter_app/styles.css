@@ -150,7 +150,7 @@ body {
 }
 
 .card.active {
-  background: var(--blue-2);
+  background: var(--blue-3);
 }
 
 .card.open {
@@ -175,6 +175,12 @@ body {
 }
 
 
+/* Table */
+.table {
+  background: var(--blue-2);
+  border: var(--border-size-2) solid var(--gray-10);
+  border-radius: var(--radius-4);
+}
 
 
 

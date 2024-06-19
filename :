@@ -90,31 +90,6 @@
                    ]})
         (dom/text (when card-open? (picked-card db neighbour-session-id)))))))
 
-(e/defn TableGrid []
-  (e/client 
-    (dom/div
-      (dom/props {:style {:display "grid"
-                          :grid-template-areas "'left top right'\n
-                                                'left table right'\n
-                                                'left bottom right'"
-                          ; :grid-template-columns "8rem 1fr 8rem"
-                          ; :grid-template-rows "auto 1fr auto"
-                          :max-width "100%"
-                          :min-height "20rem"
-                          :width "44rem"
-                          }})
-      (dom/div (dom/text "1"))
-      (dom/div (dom/text "2"))
-      (dom/div (dom/text "3"))
-      (dom/div (dom/text "4"))
-      (dom/div (dom/props {:class ["table"]}))
-      (dom/div (dom/text "6"))
-      (dom/div (dom/text "7"))
-      (dom/div (dom/text "8"))
-      (dom/div (dom/text "9"))
-      )
-    ))
-
 (e/defn App []
   (e/client
     (let [session-id (e/server (get-in e/http-request [:headers "sec-websocket-key"]))
@@ -157,7 +132,7 @@
                        (dom/text "Reveal")
                        (dom/props {:class ["btn"]}))
             )
-          (TableGrid.)
+          (dom/div (dom/text "Players"))
           (dom/div
             (dom/ul
               (e/server 
