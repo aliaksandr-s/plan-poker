@@ -45,16 +45,15 @@
 
 ; Queries
 (defn players [db] (-> db :players))
-(defn player-id [player] (first player))
+(defn player [db session-id] [session-id (get-in db [:players session-id])])
 
-(defn picked-card [db session-id]
-  (-> db :players (get session-id) :picked-card))
+(defn player-id [player] (first player))
+(defn player-name [player] (-> player second :username))
+(defn picked-card [player] (-> player second :picked-card))
+(defn card-picked? [player] (-> (picked-card player) (not= nil)))
 
 (defn active-player? [current-session-id session-id]
   (= current-session-id session-id))
-
-(defn card-picked? [db session-id]
-  (-> db :players (get session-id) :picked-card (not= nil)))
 
 (defn cards-revealed? [db]
   (-> db :cards-revealed))
@@ -74,21 +73,37 @@
           (dom/text val)
           (dom/props
             {:class ["card" 
-                     (if (= (picked-card db session-id) val) "active" nil)]}
+                     (if (= (-> (player db session-id) picked-card) 
+                            val) 
+                       "card--active" 
+                       nil)]}
             ))))))
 
-(e/defn SingleCard [neighbour-session-id]
+; pos: top, left, right, bottom
+(e/defn Player [player pos]
   (e/client
-    (let [card-open? (and (cards-revealed? db) (card-picked? db neighbour-session-id))]
-      (dom/div
-        (dom/props 
-          {:class ["card" 
-                   (cond 
-                     card-open?                                   "open"
-                     (card-picked? db neighbour-session-id)       "picked"
-                     :else                                        "unpicked")
-                   ]})
-        (dom/text (when card-open? (picked-card db neighbour-session-id)))))))
+    (dom/div
+      (dom/props {:class ["player" 
+                          (case pos
+                            :top    "player--top"
+                            :left   "player--left"
+                            :right  "player--right"
+                            :bottom "player--bottom")]})
+      (dom/div 
+        (dom/props {:class ["player__name"]})
+        (dom/text (player-name player)))
+      (let [card-open? (and (cards-revealed? db) (card-picked? player))]
+        (dom/div
+          (dom/props 
+            {:class ["card" 
+                     (cond 
+                       card-open?            "card--open"
+                       (card-picked? player) "card--picked"
+                       :else                 "card--unpicked")
+                     ]})
+          (dom/text (when card-open? (picked-card player)))))
+      )
+    ))
 
 (e/defn TableGrid []
   (e/client 
@@ -163,10 +178,24 @@
               (e/server 
                 (e/for-by player-id [player (players db)]
                           (e/client 
-                            (dom/li (dom/text player) 
+                            (dom/li 
+                              (dom/text player) 
+                              (dom/br)
+                              (dom/br)
+                              (dom/br)
+                              (dom/br)
                                     (dom/div (if (active-player? session-id (player-id player)) 
                                                 (FullDeck. session-id)
-                                                (SingleCard. (player-id player)))))
+                                                (dom/div
+                                                  (dom/props {:style {:display "flex" :flex-direction "column"}})
+                                                  (Player. player :top)
+                                                  (dom/br)
+                                                  (Player. player :right)
+                                                  (dom/br)
+                                                  (Player. player :bottom)
+                                                  (dom/br)
+                                                  (Player. player :left))
+                                                )))
                             )))))
           )))))
 
