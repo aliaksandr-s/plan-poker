@@ -45,15 +45,16 @@
 
 ; Queries
 (defn players [db] (-> db :players))
-(defn player [db session-id] [session-id (get-in db [:players session-id])])
+
+(defn player [db session-id] 
+  (when-let [player (get-in db [:players session-id])] 
+    [session-id player]))
+(defn player? [db session-id] (-> (player db session-id) (not= nil)))
 
 (defn player-id [player] (first player))
 (defn player-name [player] (-> player second :username))
 (defn picked-card [player] (-> player second :picked-card))
 (defn card-picked? [player] (-> (picked-card player) (not= nil)))
-
-(defn active-player? [current-session-id session-id]
-  (= current-session-id session-id))
 
 (defn cards-revealed? [db]
   (-> db :cards-revealed))
@@ -63,24 +64,24 @@
      (.get js-cookie USERNAME_COOKIE)))
 
 ; UI
-(e/defn FullDeck [session-id]
+(e/defn Hand [session-id]
   (e/client
     (dom/div
-      (dom/props {:style {:display "flex" :gap "8px" :flex-wrap "wrap"}})
+      (dom/props {:class ["hand"]})
       (e/for [val DECK]
         (ui/button
           (e/fn [] (e/server (pick-card! !db session-id val)))
           (dom/text val)
           (dom/props
-            {:class ["card" 
+            {:class ["hand__card" 
                      (if (= (-> (player db session-id) picked-card) 
                             val) 
-                       "card--active" 
+                       "hand__card--active" 
                        nil)]}
             ))))))
 
-; pos: top, left, right, bottom
 (e/defn Player [player pos]
+  "pos => :top | :left | :right | :bottom"
   (e/client
     (dom/div
       (dom/props {:class ["player" 
@@ -97,7 +98,7 @@
           (dom/props 
             {:class ["card" 
                      (cond 
-                       card-open?            "card--open"
+                       card-open?            nil
                        (card-picked? player) "card--picked"
                        :else                 "card--unpicked")
                      ]})
@@ -184,19 +185,19 @@
                               (dom/br)
                               (dom/br)
                               (dom/br)
-                                    (dom/div (if (active-player? session-id (player-id player)) 
-                                                (FullDeck. session-id)
-                                                (dom/div
-                                                  (dom/props {:style {:display "flex" :flex-direction "column"}})
-                                                  (Player. player :top)
-                                                  (dom/br)
-                                                  (Player. player :right)
-                                                  (dom/br)
-                                                  (Player. player :bottom)
-                                                  (dom/br)
-                                                  (Player. player :left))
-                                                )))
+                              (dom/div (dom/div
+                                         (dom/props {:style {:display "flex" :flex-direction "column"}})
+                                         ; (Player. player :top)
+                                         ; (dom/br)
+                                         ; (Player. player :right)
+                                         ; (dom/br)
+                                         ; (Player. player :bottom)
+                                         ; (dom/br)
+                                         (Player. player :left))
+                                       ))
                             )))))
+          (when (player? db session-id) 
+            (Hand. session-id))
           )))))
 
 (e/defn Main [ring-request]

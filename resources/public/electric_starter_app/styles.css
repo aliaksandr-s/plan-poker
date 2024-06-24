@@ -54,6 +54,10 @@ h6 {
 
 
 /* BASE  */
+html {
+  font-size: 16px;
+}
+
 body {
   font-family: 'Rubik', Helvetica, sans-serif;
   line-height: var(--font-lineheight-2);
@@ -135,27 +139,12 @@ body {
   height: var(--size-px-9);
   border: var(--border-size-2) solid var(--gray-10);
   font-size: var(--font-size-4);
-  border-radius: var(--radius-2);
+  border-radius: var(--size-px-2);
   box-shadow: var(--shadow-2);
   padding: var(--size-2);
-  transition: transform .2s;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.card:hover {
-  transform: scale(1.05);
-}
-
-.card--active {
-  background: var(--blue-3);
-}
-
-.card--open {
-  cursor: default;
-  transform: none;
 }
 
 .card--unpicked {
@@ -201,11 +190,43 @@ body {
   padding: var(--size-2);
 }
 
+/* Hand */
+.hand {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: var(--size-5);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--size-4);
+  border-top: var(--border-size-2) solid var(--gray-8);
+}
 
+.hand__card {
+  background: white;
+  width: var(--size-px-10);
+  height: var(--size-px-11);
+  border: var(--border-size-2) solid var(--gray-10);
+  font-size: var(--font-size-5);
+  border-radius: var(--size-px-2);
+  box-shadow: var(--shadow-2);
+  padding: var(--size-2);
+  transition: transform .2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
+.hand__card:hover {
+  transform: scale(1.05);
+}
 
-
-
+.hand__card--active {
+  background: var(--blue-3);
+}
 
 
 
