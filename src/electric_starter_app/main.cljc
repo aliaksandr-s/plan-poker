@@ -141,63 +141,58 @@
         (e/client 
           (when-let [usr (persisted-username)]
             (e/server (join! !db session-id usr)))
-          (dom/div 
-            (dom/br)
-            (ui/input username 
-                      (e/fn [v] (reset! !username v))
-                      (dom/props {:class ["input"]}))
-            (dom/br)
-            (dom/br)
-            (ui/button (e/fn [] 
-                         (when 
-                           (e/server (join! !db session-id username))
-                           (e/client (reset! !username "")
-                                     (persist-username! username))))
-                       (dom/text "Join")
-                       (dom/props 
-                         {:class ["btn"]
-                          :disabled (nil? (blank->nil username))}))
-            (ui/button (e/fn [] 
-                         (when
-                           (e/server (leave! !db session-id))
-                           (e/client (reset! !username "")
-                                     (delete-persisted-username!))))
-                       (dom/text "Leave")
-                       (dom/props {:class ["btn"]}))
-            (dom/br)
-            (dom/br)
-            (ui/button (e/fn [] (e/server (reset-picked-cards! !db)))
-                       (dom/text "Reset")
-                       (dom/props {:class ["btn"]}))
-            (ui/button (e/fn [] (e/server (reveal-cards! !db)))
-                       (dom/text "Reveal")
-                       (dom/props {:class ["btn"]}))
-            )
-          (TableGrid.)
-          (dom/div
-            (dom/ul
-              (e/server 
-                (e/for-by player-id [player (players db)]
-                          (e/client 
-                            (dom/li 
-                              (dom/text player) 
-                              (dom/br)
-                              (dom/br)
-                              (dom/br)
-                              (dom/br)
-                              (dom/div (dom/div
-                                         (dom/props {:style {:display "flex" :flex-direction "column"}})
-                                         ; (Player. player :top)
-                                         ; (dom/br)
-                                         ; (Player. player :right)
-                                         ; (dom/br)
-                                         ; (Player. player :bottom)
-                                         ; (dom/br)
-                                         (Player. player :left))
-                                       ))
-                            )))))
-          (when (player? db session-id) 
-            (Hand. session-id))
+          (dom/div (dom/props {:class ["container"]})
+            (dom/div 
+              (dom/br)
+              (ui/input username 
+                        (e/fn [v] (reset! !username v))
+                        (dom/props {:class ["input"]}))
+              (dom/br)
+              (dom/br)
+              (ui/button (e/fn [] 
+                           (when 
+                             (e/server (join! !db session-id username))
+                             (e/client (reset! !username "")
+                                       (persist-username! username))))
+                         (dom/text "Join")
+                         (dom/props 
+                           {:class ["btn"]
+                            :disabled (nil? (blank->nil username))}))
+              (ui/button (e/fn [] 
+                           (when
+                             (e/server (leave! !db session-id))
+                             (e/client (reset! !username "")
+                                       (delete-persisted-username!))))
+                         (dom/text "Leave")
+                         (dom/props {:class ["btn"]}))
+              (dom/br)
+              (dom/br)
+              (ui/button (e/fn [] (e/server (reset-picked-cards! !db)))
+                         (dom/text "Reset")
+                         (dom/props {:class ["btn"]}))
+              (ui/button (e/fn [] (e/server (reveal-cards! !db)))
+                         (dom/text "Reveal")
+                         (dom/props {:class ["btn"]})))
+            (dom/div
+              ; (TableGrid.)
+              (dom/div (dom/props {:style {:display "flex" :gap "12px" :justify-content "center" :align-items "center"}})
+                       (e/server 
+                         (e/for-by player-id [player (players db)]
+                                   (e/client 
+                                     (dom/div (dom/div
+                                                (dom/props {:style {:display "flex" :flex-direction "column"}})
+                                                (Player. player :top)
+                                                ; (dom/br)
+                                                ; (Player. player :right)
+                                                ; (dom/br)
+                                                ; (Player. player :bottom)
+                                                ; (dom/br)
+                                                ; (Player. player :left)
+                                                )
+                                              ))
+                                   ))))
+            (when (player? db session-id) 
+              (Hand. session-id)))
           )))))
 
 (e/defn Main [ring-request]
