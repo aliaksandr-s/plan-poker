@@ -70,6 +70,103 @@ body {
 
 /* COMPONENTS  */
 
+/* Label */
+label {
+  padding-bottom: 4px;
+  display: block;
+  color: var(--gray-10);
+}
+
+/* Dialog */
+dialog {
+  position:fixed;
+  top: 0; 
+  left: 0;
+  transform: translate(calc(50vw - 50%), calc(40vh - 50%));
+  border: var(--border-size-2) solid var(--gray-10);
+  border-radius: var(--size-px-2);
+  width: var(--size-15);
+  background-color: white;
+  animation: dialog-fade-out 0.1s ease-out;
+}
+
+dialog:first-child {
+  padding-right: 8px;
+}
+
+dialog > *:not(:last-child) {
+  padding-bottom: var(--size-4);
+}
+
+dialog > :last-child {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+@keyframes dialog-fade-out {
+  0% {
+    opacity: 1;
+    display: block;
+  }
+
+  100% {
+    opacity: 0;
+    display: none;
+  }
+}
+
+dialog::backdrop {
+  opacity: 0;
+  background-image: linear-gradient(to bottom right, rgba(151, 150, 240, 0.6), rgba(251, 199, 212, 0.6));
+  background-size: cover;
+}
+
+dialog[open] {
+  animation: var(--animation-fade-in);
+}
+
+dialog[open]::backdrop {
+  animation: var(--animation-fade-in) forwards;
+}
+
+.dialog__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  box-sizing: border-box;
+  display: block;
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: transform .2s;
+}
+
+.dialog__close::after,
+.dialog__close::before {
+  content: "";
+  display: block;
+  box-sizing: border-box;
+  position: absolute;
+  width: 16px;
+  height: 2px;
+  background: var(--gray-10);
+  transform: rotate(45deg);
+  border-radius: 5px;
+  top: 8px;
+  left: 1px
+}
+
+.dialog__close::after {
+  transform: rotate(-45deg)
+}
+
+.dialog__close:hover {
+  transform: scale(1.1);
+}
+
+
 /* Layout Container */
 .container {
   height: 100%;
@@ -81,7 +178,7 @@ body {
 .btn {
   background: white;
   color: var(--gray-12);
-  border-radius: var(--radius-2);
+  border-radius: var(--size-px-2);
   border: var(--border-size-2) solid var(--gray-10);
   font-size: var(--font-size-3);
   font-weight: var(--font-weight-6);
@@ -133,7 +230,7 @@ body {
 .input {
   background: white;
   border: var(--border-size-2) solid var(--gray-10);
-  border-radius: var(--radius-2);
+  border-radius: var(--size-px-2);
   color: var(--gray-12);
   font-size: var(--font-size-2);
   font-weight: var(--font-weight-5);
@@ -144,10 +241,10 @@ body {
 /* Card */
 .card {
   background: white;
-  width: var(--size-px-8);
-  height: var(--size-px-9);
+  width: 64px;
+  height: 90px;
   border: var(--border-size-2) solid var(--gray-10);
-  font-size: var(--font-size-4);
+  font-size: var(--font-size-5);
   border-radius: var(--size-px-2);
   box-shadow: var(--shadow-2);
   padding: var(--size-2);
@@ -163,12 +260,21 @@ body {
   border-color: var(--gray-2);
 }
 
+/* .card--picked { */
+/*   cursor: default; */
+/*   transform: none; */
+/*   background-image: linear-gradient(135deg, rgba(151, 150, 240, 1) 25%, transparent 25%), linear-gradient(225deg, rgba(151, 150, 240, 1) 25%, transparent 25%), linear-gradient(45deg, rgba(151, 150, 240, 1) 25%, transparent 25%), linear-gradient(315deg, rgba(151, 150, 240, 1) 25%, rgba(251, 199, 212, 0.7) 25%); */
+/*   background-position:  11px 0, 11px 0, 0 0, 0 0; */
+/*   background-size: 11px 11px; */
+/*   background-repeat: repeat; */
+/* } */
+
 .card--picked {
-  cursor: default;
-  transform: none;
-  background-image:  linear-gradient(135deg, var(--blue-2) 25%, transparent 25%), linear-gradient(225deg, var(--blue-2) 25%, transparent 25%), linear-gradient(45deg, var(--blue-2) 25%, transparent 25%), linear-gradient(315deg, var(--blue-2) 25%, var(--blue-6) 25%);
-  background-position:  11px 0, 11px 0, 0 0, 0 0;
-  background-size: 11px 11px;
+  background-color: rgba(151, 149, 245, 1);
+  opacity: 0.8;
+  background-image:  linear-gradient(135deg, rgba(250, 197, 211, 1) 25%, transparent 25%), linear-gradient(225deg, rgba(250, 197, 211, 1) 25%, transparent 25%), linear-gradient(45deg, rgba(250, 197, 211, 1) 25%, transparent 25%), linear-gradient(315deg, rgba(250, 197, 211, 1) 25%, rgba(151, 149, 245, 1) 25%);
+  background-position:  8px 0, 8px 0, 0 0, 0 0;
+  background-size: 16px 16px;
   background-repeat: repeat;
 }
 
@@ -234,7 +340,7 @@ body {
 }
 
 .hand__card--active {
-  background: var(--blue-3);
+  background: linear-gradient(to bottom right, rgba(151, 150, 240, 0.7), rgba(251, 199, 212, 0.7));
 }
 
 

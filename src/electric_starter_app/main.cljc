@@ -133,9 +133,10 @@
 
 (e/defn App []
   (e/client
-    (let [session-id (e/server (get-in e/http-request [:headers "sec-websocket-key"]))
-          !username  (atom "")
-          username   (e/watch !username)]
+    (let [session-id        (e/server (get-in e/http-request [:headers "sec-websocket-key"]))
+          !username         (atom "")
+          username          (e/watch !username)
+          dialog-id        "join-dialog"]
       (e/server 
         (e/on-unmount #(leave! !db session-id))
         (e/client 
@@ -143,21 +144,41 @@
             (e/server (join! !db session-id usr)))
           (dom/div (dom/props {:class ["container"]})
             (dom/div 
-              (dom/br)
-              (ui/input username 
-                        (e/fn [v] (reset! !username v))
-                        (dom/props {:class ["input"]}))
-              (dom/br)
-              (dom/br)
-              (ui/button (e/fn [] 
-                           (when 
-                             (e/server (join! !db session-id username))
-                             (e/client (reset! !username "")
-                                       (persist-username! username))))
-                         (dom/text "Join")
-                         (dom/props 
-                           {:class ["btn"]
-                            :disabled (nil? (blank->nil username))}))
+              (ui/button
+                (e/fn [] (.showModal (js/document.querySelector (str "#" dialog-id))))
+                (dom/props {:class ["btn"]})
+                (dom/text "Join"))
+              (dom/dialog 
+                (dom/props {:open false :id dialog-id})
+                (dom/header 
+                  (dom/h3 (dom/text "Join the Game"))
+                  (ui/button
+                    (e/fn [] (.close (js/document.querySelector (str "#" dialog-id))))
+                    (dom/props {:class ["dialog__close"]})))
+                (dom/section 
+                  (dom/label (dom/text "Name") (dom/props {:for "username"}))
+                  (ui/input username 
+                                       (e/fn [v] (reset! !username v))
+                                       (dom/props {:class ["input"] :id "username"})))
+                (dom/footer (ui/button (e/fn [] 
+                                         (when 
+                                           (e/server (join! !db session-id username))
+                                           (e/client (reset! !username "")
+                                                     (persist-username! username)
+                                                     (.close (js/document.querySelector (str "#" dialog-id))))))
+                                       (dom/text "Join")
+                                       (dom/props 
+                                         {:class ["btn"]
+                                          :disabled (nil? (blank->nil username))}))))
+              ; (ui/button (e/fn [] 
+              ;              (when 
+              ;                (e/server (join! !db session-id username))
+              ;                (e/client (reset! !username "")
+              ;                          (persist-username! username))))
+              ;            (dom/text "Join")
+              ;            (dom/props 
+              ;              {:class ["btn"]
+              ;               :disabled (nil? (blank->nil username))}))
               (ui/button (e/fn [] 
                            (when
                              (e/server (leave! !db session-id))
@@ -165,14 +186,13 @@
                                        (delete-persisted-username!))))
                          (dom/text "Leave")
                          (dom/props {:class ["btn"]}))
-              (dom/br)
-              (dom/br)
               (ui/button (e/fn [] (e/server (reset-picked-cards! !db)))
                          (dom/text "Reset")
                          (dom/props {:class ["btn"]}))
               (ui/button (e/fn [] (e/server (reveal-cards! !db)))
                          (dom/text "Reveal")
-                         (dom/props {:class ["btn"]})))
+                         (dom/props {:class ["btn"]}))
+              )
             (dom/div
               ; (TableGrid.)
               (dom/div (dom/props {:style {:display "flex" :gap "12px" :justify-content "center" :align-items "center"}})
