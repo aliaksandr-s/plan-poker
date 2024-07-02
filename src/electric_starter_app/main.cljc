@@ -170,15 +170,6 @@
                                        (dom/props 
                                          {:class ["btn"]
                                           :disabled (nil? (blank->nil username))}))))
-              ; (ui/button (e/fn [] 
-              ;              (when 
-              ;                (e/server (join! !db session-id username))
-              ;                (e/client (reset! !username "")
-              ;                          (persist-username! username))))
-              ;            (dom/text "Join")
-              ;            (dom/props 
-              ;              {:class ["btn"]
-              ;               :disabled (nil? (blank->nil username))}))
               (ui/button (e/fn [] 
                            (when
                              (e/server (leave! !db session-id))
@@ -192,6 +183,20 @@
               (ui/button (e/fn [] (e/server (reveal-cards! !db)))
                          (dom/text "Reveal")
                          (dom/props {:class ["btn"]}))
+              (dom/div 
+                (dom/props {:class ["menu"]})
+                (dom/button 
+                  (dom/props {:class ["btn menu__button"]})
+                  (dom/text ""))
+                (dom/nav
+                  (dom/props {:class ["menu__list"]})
+                  (ui/button (e/fn [] 
+                               (when
+                                 (e/server (leave! !db session-id))
+                                 (e/client (reset! !username "")
+                                           (delete-persisted-username!))))
+                             (dom/text "Leave")
+                             (dom/props {:class ["btn"]}))))
               )
             (dom/div
               ; (TableGrid.)
