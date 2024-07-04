@@ -1,3 +1,10 @@
+# JS dependencies
+FROM node:14.7-stretch AS node-deps
+WORKDIR /app
+COPY package.json package.json
+RUN npm install
+
+# Main build
 FROM clojure:openjdk-11-tools-deps AS build
 WORKDIR /app
 
