@@ -1,35 +1,51 @@
-# Fly.io deployment configuration
-# This starter app is automatically built and deployed to fly.io by a Github Action
-# See `.github/workflows/deploy.yml`
+# fly.toml app configuration file generated for scrum-21 on 2024-07-04T15:39:03+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "electric-starter-app"
-primary_region = "ewr"
-kill_signal = "SIGINT"
-kill_timeout = "5s"
+app = 'scrum-21'
+primary_region = 'waw'
+kill_signal = 'SIGINT'
+kill_timeout = '5s'
 
 [experimental]
   auto_rollback = true
 
-[[services]]
-  protocol = "tcp"
+[build]
+
+[http_service]
   internal_port = 8080
-  processes = ["app"]
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 8080
+  processes = ['app']
 
   [[services.ports]]
     port = 80
-    handlers = ["http"]
+    handlers = ['http']
     force_https = true
 
   [[services.ports]]
     port = 443
-    handlers = ["tls", "http"]
+    handlers = ['tls', 'http']
+
   [services.concurrency]
-    type = "connections"
+    type = 'connections'
     hard_limit = 200
     soft_limit = 150
 
   [[services.tcp_checks]]
-    interval = "15s"
-    timeout = "2s"
-    grace_period = "1s"
-    restart_limit = 0
+    interval = '15s'
+    timeout = '2s'
+    grace_period = '1s'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1
