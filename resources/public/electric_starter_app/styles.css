@@ -264,7 +264,8 @@ dialog[open]::backdrop {
 }
 
 .bottom-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   justify-content: center;
   align-items: start;
 }
@@ -431,3 +432,13 @@ dialog[open]::backdrop {
   background: var(--gradient-1);
 }
 
+/* Average counter */
+.average {
+  display: flex;
+  justify-content: end;
+  align-items: end;
+  height: 100%;
+  padding: 0 50px 50px 0;
+  font-size: var(--font-size-5);
+  font-weight: var(--font-weight-4);
+}

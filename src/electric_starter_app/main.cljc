@@ -58,8 +58,15 @@
 (defn picked-card [player] (-> player second :picked-card))
 (defn card-picked? [player] (-> (picked-card player) (not= nil)))
 
-(defn cards-revealed? [db]
-  (-> db :cards-revealed))
+(defn cards-revealed? [db] (-> db :cards-revealed))
+(defn average [db]
+  (let [cards (->> (vals (players db))
+                   (map :picked-card)
+                   (filter number?))]
+    (if (empty? cards)
+      0.0
+      (let [sum (reduce + cards)]
+        (float (/ sum (count cards)))))))
 
 #?(:cljs
    (defn persisted-username [] 
@@ -188,10 +195,16 @@
                                  (dom/text "Reveal")
                                  (dom/props {:class ["btn"]})))))))
             (dom/div
+              (dom/div)
               (dom/props {:class ["bottom-row"]})
               (if (player? db session-id)
                 (Player. (player db session-id) :bottom)
-                (dom/div (dom/props {:class ["card card--unpicked"]}))))
+                (dom/div (dom/props {:class ["card card--unpicked"]})))
+              (dom/div
+                (dom/props {:class ["average"]})
+                (when (cards-revealed? db)
+                  (dom/div
+                    (dom/text (.toPrecision (average db) 2))))))
             (when (player? db session-id) 
               (Hand. session-id)))
           )))))
