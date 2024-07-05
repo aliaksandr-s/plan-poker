@@ -199,7 +199,9 @@
               (dom/props {:class ["bottom-row"]})
               (if (player? db session-id)
                 (Player. (player db session-id) :bottom)
-                (dom/div (dom/props {:class ["card card--unpicked"]})))
+                (dom/div
+                  (dom/props {:style {:display "flex" :justify-content "center"}})
+                  (dom/div (dom/props {:class ["card card--unpicked"]}))))
               (dom/div
                 (dom/props {:class ["average"]})
                 (when (cards-revealed? db)
