@@ -199,12 +199,11 @@ dialog[open]::backdrop {
   content: "🍔";
 }
 
-.menu__button:focus:before {
+.menu--open .menu__button:before {
   content: "😋";
 }
 
-.menu__button + .menu__list:active,
-.menu__button:focus + .menu__list {
+.menu--open .menu__list {
   display: flex;
   animation: menu-fade-in 0.25s ease-in;
 }

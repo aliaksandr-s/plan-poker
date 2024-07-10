@@ -158,8 +158,13 @@
             (dom/div 
               (dom/props {:class ["topbar"]})
               (dom/div 
-                (dom/props {:class ["menu"]})
-                (dom/button 
+                (dom/props {:class ["menu"] :id "menu"})
+                (.addEventListener js/document "click" 
+                                   (fn [e] (let [menu (js/document.querySelector "#menu")]
+                                             (when (not (.contains menu (.-target e)))
+                                               (.remove (.-classList menu) "menu--open")))))
+                (ui/button 
+                  (e/fn [] (.toggle (.-classList (js/document.querySelector "#menu")) "menu--open"))
                   (dom/props {:class ["btn menu__button"]})
                   (dom/text ""))
                 (dom/nav
@@ -167,7 +172,8 @@
                   (ui/button (e/fn [] 
                                (when
                                  (e/server (leave! !db session-id))
-                                 (e/client (delete-persisted-username!))))
+                                 (e/client (delete-persisted-username!)))
+                               (.remove (.-classList (js/document.querySelector "#menu")) "menu--open"))
                              (dom/text "Leave")
                              (dom/props {:class ["btn"]})))))
             (dom/div
